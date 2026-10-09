@@ -1,0 +1,31 @@
+# =============================================================================
+#  Valores para instalar Argo CD con Helm en el clúster del laboratorio
+#  Instituto Tecnológico de Santo Domingo (INTEC) · ING-IDS339-01
+# -----------------------------------------------------------------------------
+#  helm repo add argo https://argoproj.github.io/argo-helm
+#  helm install argocd argo/argo-cd --version 10.9.6 \
+#       -n argocd --create-namespace -f argocd/values-argocd.yaml --wait
+# =============================================================================
+configs:
+  params:
+    # La interfaz se sirve por HTTP dentro del clúster; el acceso solo es por
+    # 127.0.0.1. En producción, TLS en el propio servidor o en un Ingress.
+    server.insecure: true
+  cm:
+    # Cada cuánto consulta Argo CD el repositorio Git (por defecto, 120 s más
+    # hasta 60 s aleatorios). Sin webhook de GitHub hacia un clúster local, el
+    # sondeo es lo que detecta los commits.
+    timeout.reconciliation: 30s
+    timeout.reconciliation.jitter: 0s
+
+server:
+  service:
+    type: NodePort
+    nodePortHttp: 30085    # kind lo publica en http://localhost:8085
+
+# Componentes que el laboratorio no usa: inicio de sesión con proveedores
+# externos (Dex) y notificaciones.
+dex:
+  enabled: false
+notifications:
+  enabled: false

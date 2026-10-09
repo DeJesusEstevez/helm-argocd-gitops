@@ -1,0 +1,15 @@
+# Ficheros que no forman parte del paquete del chart.
+.git/
+.gitignore
+.gitattributes
+.helmignore
+*.swp
+*.bak
+*.tmp
+*.orig
+*~
+.vscode/
+.idea/
+# Configuración de la plataforma: está en el repositorio, pero no es del chart.
+argocd/
+cluster/

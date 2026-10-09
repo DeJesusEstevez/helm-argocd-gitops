@@ -1,0 +1,16 @@
+{{ .Chart.Name }} {{ .Chart.Version }} instalado como «{{ .Release.Name }}» en el namespace {{ .Release.Namespace }}.
+
+Réplicas: {{ .Values.replicaCount }} · imagen: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+{{- if eq .Values.service.type "NodePort" }}
+
+Acceso: NodePort {{ .Values.service.nodePort }}. En el clúster kind del laboratorio,
+http://localhost:8090 (y http://localhost:8090/info para una línea de texto).
+{{- else }}
+
+Acceso:
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "intec-web.fullname" . }} 8090:{{ .Values.service.port }}
+  y abrir http://localhost:8090
+{{- end }}
+
+Comprobar la instalación:
+  helm test {{ .Release.Name }} -n {{ .Release.Namespace }} --logs

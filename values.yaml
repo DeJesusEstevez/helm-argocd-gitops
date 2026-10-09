@@ -1,0 +1,43 @@
+# =============================================================================
+#  Valores del chart intec-web
+#  Instituto Tecnológico de Santo Domingo (INTEC) · ING-IDS339-01
+# -----------------------------------------------------------------------------
+#  Este fichero es el estado deseado de la aplicación. Argo CD lo vigila: un
+#  commit que cambie, por ejemplo, replicaCount o image.tag se aplica solo al
+#  clúster, y revertir ese commit deshace el cambio.
+# =============================================================================
+
+# Número de pods de la aplicación.
+replicaCount: 2
+
+image:
+  # nginx que se ejecuta sin privilegios de root y escucha en el puerto 8080.
+  repository: nginxinc/nginx-unprivileged
+  # Versión fijada: nunca «latest».
+  tag: "1.30.4-alpine"
+  pullPolicy: IfNotPresent
+
+# Contenido de la página de inicio (se genera en el ConfigMap).
+pagina:
+  titulo: "Servicio web desplegado con GitOps"
+  mensaje: "Helm empaqueta la aplicación y Argo CD mantiene el clúster igual a lo que dice Git."
+  color: "#E4002B"
+  entorno: "laboratorio"
+
+service:
+  type: NodePort
+  port: 80
+  # El clúster kind del laboratorio publica este puerto en http://localhost:8090.
+  nodePort: 30090
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 32Mi
+  limits:
+    cpu: 200m
+    memory: 64Mi
+
+# Pod de comprobación que ejecuta «helm test».
+pruebas:
+  imagen: busybox:1.37.0

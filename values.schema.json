@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Valores del chart intec-web",
+  "type": "object",
+  "required": ["replicaCount", "image", "pagina", "service", "resources"],
+  "properties": {
+    "replicaCount": {
+      "description": "Número de pods",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "image": {
+      "type": "object",
+      "required": ["repository", "tag"],
+      "properties": {
+        "repository": { "type": "string", "minLength": 1 },
+        "tag": {
+          "description": "Versión fijada de la imagen; «latest» no se admite",
+          "type": "string",
+          "minLength": 1,
+          "not": { "const": "latest" }
+        },
+        "pullPolicy": { "enum": ["Always", "IfNotPresent", "Never"] }
+      }
+    },
+    "pagina": {
+      "type": "object",
+      "required": ["titulo", "mensaje", "color", "entorno"],
+      "properties": {
+        "titulo": { "type": "string", "maxLength": 80 },
+        "mensaje": { "type": "string", "maxLength": 200 },
+        "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "entorno": { "type": "string", "maxLength": 40 }
+      }
+    },
+    "service": {
+      "type": "object",
+      "required": ["type", "port"],
+      "properties": {
+        "type": { "enum": ["ClusterIP", "NodePort"] },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "nodePort": { "type": "integer", "minimum": 30000, "maximum": 32767 }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "required": ["requests", "limits"]
+    },
+    "pruebas": {
+      "type": "object",
+      "properties": {
+        "imagen": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

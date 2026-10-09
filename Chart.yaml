@@ -1,0 +1,22 @@
+apiVersion: v2
+name: intec-web
+description: >-
+  Servicio web de demostración (nginx sin privilegios) que se despliega con Helm
+  y se mantiene sincronizado con Git mediante Argo CD.
+type: application
+# Versión del chart: se sube cuando cambian las plantillas.
+version: 1.0.0
+# Versión del contenido de la aplicación (la página). La versión de nginx se
+# fija en values.yaml (image.tag).
+appVersion: "1.0.0"
+keywords:
+  - kubernetes
+  - helm
+  - argocd
+  - gitops
+home: https://github.com/DeJesusEstevez/helm-argocd-gitops
+sources:
+  - https://github.com/DeJesusEstevez/helm-argocd-gitops
+maintainers:
+  - name: Jose Enrique De Jesus Estevez
+    url: https://github.com/DeJesusEstevez

@@ -1,0 +1,40 @@
+{{- /*
+Prueba de «helm test»: un pod efímero pide /healthz al Service y termina con
+éxito si recibe respuesta.
+*/ -}}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "intec-web.fullname" . }}-test-conexion"
+  labels:
+    {{- include "intec-web.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: wget
+      image: {{ .Values.pruebas.imagen }}
+      command:
+        - wget
+        - -qO-
+        - http://{{ include "intec-web.fullname" . }}:{{ .Values.service.port }}/healthz
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+        limits:
+          cpu: 50m
+          memory: 32Mi

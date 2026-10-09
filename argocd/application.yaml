@@ -1,0 +1,36 @@
+# =============================================================================
+#  Application de Argo CD: el clúster sigue a este repositorio
+#  Instituto Tecnológico de Santo Domingo (INTEC) · ING-IDS339-01
+# -----------------------------------------------------------------------------
+#  Argo CD renderiza el chart de la raíz del repositorio (rama main) y lo aplica
+#  en el namespace intec-web. Con la sincronización automática, cada commit se
+#  aplica solo; prune borra lo que desaparece de Git y selfHeal deshace los
+#  cambios hechos a mano en el clúster.
+#
+#  Uso:  kubectl apply -f argocd/application.yaml
+# =============================================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: intec-web
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/DeJesusEstevez/helm-argocd-gitops.git
+    targetRevision: main
+    path: .
+    helm:
+      releaseName: intec-web
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: intec-web
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+  revisionHistoryLimit: 10

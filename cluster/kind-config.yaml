@@ -1,0 +1,31 @@
+# =============================================================================
+#  Clúster local de Kubernetes con kind (Kubernetes in Docker)
+#  Instituto Tecnológico de Santo Domingo (INTEC) · ING-IDS339-01
+# -----------------------------------------------------------------------------
+#  Un nodo de control y dos nodos de trabajo, cada uno un contenedor de Docker.
+#  Dos puertos del nodo de control se publican solo en 127.0.0.1:
+#    8085 → NodePort 30085 (interfaz de Argo CD)
+#    8090 → NodePort 30090 (aplicación intec-web)
+#
+#  Uso:  kind create cluster --config cluster/kind-config.yaml
+# =============================================================================
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: intec-gitops
+nodes:
+  - role: control-plane
+    # Kubernetes 1.35.8, fijado por digest (lista de imágenes de kind v0.33.0).
+    image: kindest/node:v1.35.8@sha256:07b2536e30b803ed61d1677a79df6115f798ce64c80f9e22f6ed45afd09323c0
+    extraPortMappings:
+      - containerPort: 30085
+        hostPort: 8085
+        listenAddress: "127.0.0.1"
+        protocol: TCP
+      - containerPort: 30090
+        hostPort: 8090
+        listenAddress: "127.0.0.1"
+        protocol: TCP
+  - role: worker
+    image: kindest/node:v1.35.8@sha256:07b2536e30b803ed61d1677a79df6115f798ce64c80f9e22f6ed45afd09323c0
+  - role: worker
+    image: kindest/node:v1.35.8@sha256:07b2536e30b803ed61d1677a79df6115f798ce64c80f9e22f6ed45afd09323c0

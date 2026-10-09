@@ -1,0 +1,2 @@
+# Paquetes generados con «helm package».
+*.tgz

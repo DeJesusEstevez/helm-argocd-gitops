@@ -1,0 +1,107 @@
+{{- /*
+Configuración de nginx y página de inicio. La página usa SSI (Server Side
+Includes) para mostrar el pod que respondió y la versión de nginx, así se ve
+en el navegador cuándo cambian las réplicas o la imagen.
+*/ -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "intec-web.fullname" . }}
+  labels:
+    {{- include "intec-web.labels" . | nindent 4 }}
+data:
+  nginx.conf: |
+    # «worker_processes auto» vería todas las CPU del nodo, no el límite del
+    # pod: arrancaba un proceso por CPU del nodo (20) para 0,2 CPU.
+    worker_processes  1;
+    error_log  /var/log/nginx/error.log notice;
+    pid        /tmp/nginx.pid;
+
+    events {
+        worker_connections  1024;
+    }
+
+    http {
+        # El sistema de ficheros es de solo lectura: lo temporal va a /tmp.
+        client_body_temp_path /tmp/client_temp;
+        proxy_temp_path       /tmp/proxy_temp;
+        fastcgi_temp_path     /tmp/fastcgi_temp;
+        uwsgi_temp_path       /tmp/uwsgi_temp;
+        scgi_temp_path        /tmp/scgi_temp;
+
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+        access_log    /var/log/nginx/access.log;
+        sendfile      on;
+        keepalive_timeout  65;
+        server_tokens off;
+
+        server {
+            listen       8080;
+            server_name  localhost;
+
+            location / {
+                root   /usr/share/nginx/html;
+                index  index.html;
+                ssi    on;
+                add_header Cache-Control "no-store" always;
+                add_header X-Pod $hostname always;
+            }
+
+            # Una línea de texto para comprobar desde la terminal.
+            location = /info {
+                default_type text/plain;
+                return 200 "pod=$hostname nginx=$nginx_version\n";
+            }
+
+            # Sondas de Kubernetes.
+            location = /healthz {
+                access_log off;
+                default_type text/plain;
+                return 200 "ok\n";
+            }
+        }
+    }
+  index.html: |
+    <!doctype html>
+    <html lang="es">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ .Release.Name }} · Kubernetes, Helm y Argo CD</title>
+    <style>
+      :root{--color:{{ .Values.pagina.color }};--tinta:#1B1B1D;--suave:#4A4C50;--gris:#63666A;--linea:#E6E7E7;--fondo:#F7F8F8;color-scheme:light}
+      *{box-sizing:border-box}
+      body{margin:0;background:var(--fondo);color:var(--tinta);font:16px/1.55 "Segoe UI",system-ui,-apple-system,Arial,sans-serif}
+      main{max-width:840px;margin:0 auto;padding:32px 24px}
+      .rotulo{font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gris);margin:0 0 10px}
+      h1{font-size:2.2rem;line-height:1.12;letter-spacing:-.02em;margin:0;font-weight:700;text-wrap:balance}
+      .franja{width:96px;height:6px;border-radius:3px;background:var(--color);margin:14px 0}
+      .mensaje{color:var(--suave);max-width:70ch;margin:0 0 20px}
+      dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin:0;background:#fff;border:1px solid var(--linea);border-radius:8px}
+      dl div{padding:10px 16px;border-bottom:1px solid var(--linea)}
+      dt{font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gris)}
+      dd{margin:2px 0 0}
+      code{font-family:Consolas,"Cascadia Mono",monospace;font-size:.95em}
+      .destacado{color:var(--color);font-weight:700}
+      p.nota{font-size:.9rem;color:var(--gris);margin:16px 0 0}
+    </style>
+    </head>
+    <body>
+    <main>
+      <p class="rotulo">Kubernetes · Helm · Argo CD — INTEC ING-IDS339-01</p>
+      <h1>{{ .Values.pagina.titulo | html }}</h1>
+      <div class="franja"></div>
+      <p class="mensaje">{{ .Values.pagina.mensaje | html }}</p>
+      <dl>
+        <div><dt>Pod que respondió</dt><dd><code class="destacado"><!--# echo var="hostname" --></code></dd></div>
+        <div><dt>Versión de nginx</dt><dd><code class="destacado"><!--# echo var="nginx_version" --></code></dd></div>
+        <div><dt>Imagen</dt><dd><code>{{ .Values.image.repository }}:{{ .Values.image.tag }}</code></dd></div>
+        <div><dt>Release de Helm</dt><dd><code>{{ .Release.Name }}</code></dd></div>
+        <div><dt>Chart</dt><dd><code>{{ .Chart.Name }} {{ .Chart.Version }}</code></dd></div>
+        <div><dt>Namespace · entorno</dt><dd><code>{{ .Release.Namespace }}</code> · {{ .Values.pagina.entorno | html }}</dd></div>
+      </dl>
+      <p class="nota">Al recargar, el Service de Kubernetes puede enviar la petición a otro pod.</p>
+    </main>
+    </body>
+    </html>
