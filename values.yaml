@@ -8,13 +8,13 @@
 # =============================================================================
 
 # Número de pods de la aplicación.
-replicaCount: 2
+replicaCount: 3
 
 image:
   # nginx que se ejecuta sin privilegios de root y escucha en el puerto 8080.
   repository: nginxinc/nginx-unprivileged
   # Versión fijada: nunca «latest».
-  tag: "1.30.4-alpine"
+  tag: "1.30.5-alpine"
   pullPolicy: IfNotPresent
 
 # Contenido de la página de inicio (se genera en el ConfigMap).
