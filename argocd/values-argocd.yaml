@@ -12,6 +12,8 @@ configs:
     # 127.0.0.1. En producción, TLS en el propio servidor o en un Ingress.
     server.insecure: true
   cm:
+    # Dirección de la interfaz (la usan los enlaces del CLI y de la UI).
+    url: http://localhost:8085
     # Cada cuánto consulta Argo CD el repositorio Git (por defecto, 120 s más
     # hasta 60 s aleatorios). Sin webhook de GitHub hacia un clúster local, el
     # sondeo es lo que detecta los commits.
